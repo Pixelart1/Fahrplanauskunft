@@ -30,6 +30,7 @@ class Stop:
         self.arrival_time = time.fromisoformat(arrivel_time) if arrivel_time else None
         self.is_end = is_end
 
+
 class Start(Stop):
     def __init__(self, tag, departure_time):
         super().__init__(tag, departure_time, None, False)
@@ -75,15 +76,17 @@ class Timetable:
         sorted_departures = sorted(departures, key=lambda x: x[0])
         return sorted_departures
 
-    def print_sorted_departures(self, station_tag):
+    def print_sorted_departures(self, station_tag, time_str):
+        current_time = time.fromisoformat(time_str)
         sorted_departures = self.get_sorted_departures(station_tag)
         for departure_time, line, is_departure in sorted_departures:
-            if is_departure:
-                end_stop = line.get_end_stop()
-                print(departure_time, line.name, "nach", end_stop.station.name)
-            else:
-                start_stop = line.get_start_stop()
-                print(departure_time, line.name, "von", start_stop.station.name)
+            if departure_time >= current_time:
+                if is_departure:
+                    end_stop = line.get_end_stop()
+                    print(departure_time, line.name, "nach", end_stop.station.name)
+                else:
+                    start_stop = line.get_start_stop()
+                    print(departure_time, line.name, "von", start_stop.station.name)
 
 
 # Alle Bahnhöfe
@@ -152,7 +155,7 @@ def main():
     stations = get_stations()
     lines = get_lines()
     timetable = Timetable(stations, lines)
-    timetable.print_sorted_departures("SGH")
+    timetable.print_sorted_departures("SGH", "03:00")
 
 
 if __name__ == '__main__':
