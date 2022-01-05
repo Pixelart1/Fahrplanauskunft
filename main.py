@@ -1,117 +1,31 @@
 from datetime import time
 
-
-class Station:
-    def __init__(self, tag, name):
-        self.name = name
-        self.tag = tag
-
-
-class Line:
-    def __init__(self, name, stops):
-        self.name = name
-        self.stops = stops
-
-    def get_end_stop(self):
-        for stop in self.stops:
-            if stop.is_end:
-                return stop
-
-    def get_start_stop(self):
-        for stop in self.stops:
-            if stop.arrival_time is None:
-                return stop
-
-
-class Stop:
-    def __init__(self, tag, departure_time, arrivel_time, is_end):
-        self.tag = tag
-        self.departure_time = time.fromisoformat(departure_time) if departure_time else None
-        self.arrival_time = time.fromisoformat(arrivel_time) if arrivel_time else None
-        self.is_end = is_end
-
-
-class Start(Stop):
-    def __init__(self, tag, departure_time):
-        super().__init__(tag, departure_time, None, False)
-
-
-class Via(Stop):
-    def __init__(self, tag, arrival_time, departure_time):
-        super().__init__(tag, departure_time, arrival_time, False)
-
-
-class End(Stop):
-    def __init__(self, tag, arrival_time):
-        super().__init__(tag, None, arrival_time, True)
-
-
-class Timetable:
-    def __init__(self, stations, lines):
-        self.lines = lines
-        self.stations = stations
-        for line in self.lines:
-            for stop in line.stops:
-                stop.station = self.get_station_for_tag(stop.tag)
-
-    def get_station_for_tag(self, tag):
-        for station in self.stations:
-            if tag == station.tag:
-                return station
-        print("Error: Station is not found")
-
-    def get_departures(self, station_tag):
-        departures = []
-        for line in self.lines:
-            for stop in line.stops:
-                if stop.tag == station_tag:
-                    if stop.departure_time is not None:
-                        departures.append((stop.departure_time, line, True))
-                    else:
-                        departures.append((stop.arrival_time, line, False))
-        return departures
-
-    def get_sorted_departures(self, station_tag):
-        departures = self.get_departures(station_tag)
-        sorted_departures = sorted(departures, key=lambda x: x[0])
-        return sorted_departures
-
-    def print_sorted_departures(self, station_tag, time_str):
-        current_time = time.fromisoformat(time_str)
-        sorted_departures = self.get_sorted_departures(station_tag)
-        for departure_time, line, is_departure in sorted_departures:
-            if departure_time >= current_time:
-                if is_departure:
-                    end_stop = line.get_end_stop()
-                    print(departure_time, line.name, "nach", end_stop.station.name)
-                else:
-                    start_stop = line.get_start_stop()
-                    print(departure_time, line.name, "von", start_stop.station.name)
+from timetable import Timetable, Station, Line, Start, Via, End
 
 
 # Alle Bahnhöfe
 def get_stations():
     return [
-        Station("ALD", "Aulendorf"),
-        Station("ALH", "Altshausen"),
-        Station("BSG", "Bad Saulgau"),
-        Station("HBO", "Herbertingen Ort"),
-        Station("HBT", "Herbertingen"),
-        Station("MNG", "Mengen"),
-        Station("SGM", "Sigmaringen"),
-        Station("STZ", "Storzingen"),
-        Station("ASE", "Albstadt-Ebingen"),
-        Station("BIW", "Balingen in Württemberg"),
-        Station("HIG", "Hechingen"),
-        Station("MÖS", "Mössingen"),
-        Station("TÜH", "Tübingen Hauptbahnhof"),
-        Station("RLH", "Reutlingen Hauptbahnhof"),
-        Station("SGH", "Stuttgart Hauptbahnhof"),
-        Station("BÖB", "Böblingen"),
-        Station("HRR", "Herrenberg"),
-        Station("GÄF", "Gäufelden"),
-        Station("BBH", "Bondorf bei Herrenberg"),
-        Station("EGZ", "Ergenzingen"),
+        Station("UNI", "Universität"),
+        Station("BER", "Bernheim"),
+        Station("BAH", "Bahnhofsvorplatz"),
+        Station("BHF", "Bahnhof"),
+        Station("MAR", "Markt"),
+        Station("POL", "Polizeipräsidium"),
+        Station("MES", "Messebahnhof"),
+        Station("HAL", "Hallen"),
+        Station("HLS", "Hallen Süd"),
+        Station("FEN", "Fenschendorf"),
+        Station("STA", "Stadion"),
+        Station("LDB", "Lindenbaum"),
+        Station("WES", "Weißer Stein"),
+        Station("HDH", "Heddernheim"),
+        Station("ZEW", "Zeilweg"),
+        Station("HDL", "Heddernheimer Landstraße"),
+        Station("NWZ", "Nordwestzentrum"),
+        Station("RÖM", "Römerstadt"),
+        Station("NDP", "Niddapark"),
+        Station("GNH", "Ginnheim"),
         Station("EIG", "Eutingen im Gäu"),
         Station("HOB", "Horb"),
 
@@ -121,33 +35,331 @@ def get_stations():
 # Alle Linien
 def get_lines():
     return [
-        Line(name="RB 14 001", stops=[
-            Start("SGH", "17:55"),
-            Via("BÖB", "18:15", "18:16"),
-            Via("HRR", "18:25", "18:26"),
-            Via("GÄF", "18:29", "18:29"),
-            Via("BBH", "18:32", "18:33"),
-            Via("EGZ", "18:36", "18:36"),
-            Via("EIG", "18:39", "18:39"),
-            End("HOB", "18:48"),
+        Line(name="11", stops=[
+            Start("UNI", "00:00"),
+            Via("BER", "00:03", "00:04"),
+            Via("BAH", "00:10", "00:11"),
+            Via("BHF", "00:13", "00:14"),
+            Via("MAR", "00:17", "00:18"),
+            Via("POL", "00:22", "00:23"),
+            Via("MES", "00:28", "00:29"),
+            Via("HAL", "00:34", "00:35"),
+            Via("HLS", "00:38", "00:39"),
+            Via("FEN", "00:48", "00:49"),
+            End("STA", "00:56"),
         ]),
-        Line(name="IRE 6 001", stops=[
-            Start("ALD", "15:06"),
-            Via("ALH", "15:12", "15:13"),
-            Via("BSG", "15:20", "15:21"),
-            Via("HBO", "15:26", "15:27"),
-            Via("HBT", "15:29", "15:29"),
-            Via("MNG", "15:34", "15:35"),
-            Via("SGM", "15:48", "15:50"),
-            Via("STZ", "16:00", "16:01"),
-            Via("ASE", "16:10", "16:11"),
-            Via("BIW", "16:22", "16:25"),
-            Via("HIG", "16:37", "16:39"),
-            Via("MÖS", "16:45", "16:46"),
-            Via("TÜH", "16:57", "17:00"),
-            Via("RLH", "17:08", "17:09"),
-            End("SGH", "17:50"),
+        Line(name="21", stops=[
+            Start("UNI", "00:00"),
+            Via("BER", "00:03", "00:04"),
+            Via("BAH", "00:10", "00:11"),
+            Via("BHF", "00:13", "00:14"),
+            Via("MAR", "00:17", "00:18"),
+            Via("POL", "00:22", "00:23"),
+            Via("MES", "00:28", "00:29"),
+            Via("HAL", "00:34", "00:35"),
+            Via("HLS", "00:38", "00:39"),
+            Via("FEN", "00:48", "00:49"),
+            End("STA", "00:56"),
         ]),
+        Line(name="12", stops=[
+            Start("UNI", "01:00"),
+            Via("BER", "01:03", "01:04"),
+            Via("BAH", "01:10", "01:11"),
+            Via("BHF", "01:13", "01:14"),
+            Via("MAR", "01:17", "01:18"),
+            Via("POL", "01:22", "01:23"),
+            Via("MES", "01:28", "01:29"),
+            Via("HAL", "01:34", "01:35"),
+            Via("HLS", "01:38", "01:39"),
+            Via("FEN", "01:48", "01:49"),
+            End("STA", "01:56"),
+        ]),
+        Line(name="13", stops=[
+            Start("UNI", "02:00"),
+            Via("BER", "02:03", "02:04"),
+            Via("BAH", "02:10", "02:11"),
+            Via("BHF", "02:13", "02:14"),
+            Via("MAR", "02:17", "02:18"),
+            Via("POL", "02:22", "02:23"),
+            Via("MES", "02:28", "02:29"),
+            Via("HAL", "02:34", "02:35"),
+            Via("HLS", "02:38", "02:39"),
+            Via("FEN", "02:48", "02:49"),
+            End("STA", "02:56"),
+        ]),
+        Line(name="14", stops=[
+            Start("UNI", "03:00"),
+            Via("BER", "03:03", "03:04"),
+            Via("BAH", "03:10", "03:11"),
+            Via("BHF", "03:13", "03:14"),
+            Via("MAR", "03:17", "03:18"),
+            Via("POL", "03:22", "03:23"),
+            Via("MES", "03:28", "03:29"),
+            Via("HAL", "03:34", "03:35"),
+            Via("HLS", "03:38", "03:39"),
+            Via("FEN", "03:48", "03:49"),
+            End("STA", "03:56"),
+        ]),
+        Line(name="15", stops=[
+            Start("UNI", "04:00"),
+            Via("BER", "04:03", "04:04"),
+            Via("BAH", "04:10", "04:11"),
+            Via("BHF", "04:13", "04:14"),
+            Via("MAR", "04:17", "04:18"),
+            Via("POL", "04:22", "04:23"),
+            Via("MES", "04:28", "04:29"),
+            Via("HAL", "04:34", "04:35"),
+            Via("HLS", "04:38", "04:39"),
+            Via("FEN", "04:48", "04:49"),
+            End("STA", "04:56"),
+        ]),
+        Line(name="16", stops=[
+            Start("UNI", "05:00"),
+            Via("BER", "05:03", "05:04"),
+            Via("BAH", "05:10", "05:11"),
+            Via("BHF", "05:13", "05:14"),
+            Via("MAR", "05:17", "05:18"),
+            Via("POL", "05:22", "05:23"),
+            Via("MES", "05:28", "05:29"),
+            Via("HAL", "05:34", "05:35"),
+            Via("HLS", "05:38", "05:39"),
+            Via("FEN", "05:48", "05:49"),
+            End("STA", "05:56"),
+        ]),
+        Line(name="17", stops=[
+            Start("UNI", "06:00"),
+            Via("BER", "06:03", "06:04"),
+            Via("BAH", "06:10", "06:11"),
+            Via("BHF", "06:13", "06:14"),
+            Via("MAR", "06:17", "06:18"),
+            Via("POL", "06:22", "06:23"),
+            Via("MES", "06:28", "06:29"),
+            Via("HAL", "06:34", "06:35"),
+            Via("HLS", "06:38", "06:39"),
+            Via("FEN", "06:48", "06:49"),
+            End("STA", "06:56"),
+        ]),
+        Line(name="18", stops=[
+            Start("UNI", "07:00"),
+            Via("BER", "07:03", "07:04"),
+            Via("BAH", "07:10", "07:11"),
+            Via("BHF", "07:13", "07:14"),
+            Via("MAR", "07:17", "07:18"),
+            Via("POL", "07:22", "07:23"),
+            Via("MES", "07:28", "07:29"),
+            Via("HAL", "07:34", "07:35"),
+            Via("HLS", "07:38", "07:39"),
+            Via("FEN", "07:48", "07:49"),
+            End("STA", "07:56"),
+        ]),
+        Line(name="19", stops=[
+            Start("UNI", "08:00"),
+            Via("BER", "08:03", "08:04"),
+            Via("BAH", "08:10", "08:11"),
+            Via("BHF", "08:13", "08:14"),
+            Via("MAR", "08:17", "08:18"),
+            Via("POL", "08:22", "08:23"),
+            Via("MES", "08:28", "08:29"),
+            Via("HAL", "08:34", "08:35"),
+            Via("HLS", "08:38", "08:39"),
+            Via("FEN", "08:48", "08:49"),
+            End("STA", "08:56"),
+        ]),
+        Line(name="110", stops=[
+            Start("UNI", "09:00"),
+            Via("BER", "09:03", "09:04"),
+            Via("BAH", "09:10", "09:11"),
+            Via("BHF", "09:13", "09:14"),
+            Via("MAR", "09:17", "09:18"),
+            Via("POL", "09:22", "09:23"),
+            Via("MES", "09:28", "09:29"),
+            Via("HAL", "09:34", "09:35"),
+            Via("HLS", "09:38", "09:39"),
+            Via("FEN", "09:48", "09:49"),
+            End("STA", "09:56"),
+        ]),
+        Line(name="111", stops=[
+            Start("UNI", "10:00"),
+            Via("BER", "10:03", "10:04"),
+            Via("BAH", "10:10", "10:11"),
+            Via("BHF", "10:13", "10:14"),
+            Via("MAR", "10:17", "10:18"),
+            Via("POL", "10:22", "10:23"),
+            Via("MES", "10:28", "10:29"),
+            Via("HAL", "10:34", "10:35"),
+            Via("HLS", "10:38", "10:39"),
+            Via("FEN", "10:48", "10:49"),
+            End("STA", "10:56"),
+        ]),
+        Line(name="112", stops=[
+            Start("UNI", "11:00"),
+            Via("BER", "11:03", "11:04"),
+            Via("BAH", "11:10", "11:11"),
+            Via("BHF", "11:13", "11:14"),
+            Via("MAR", "11:17", "11:18"),
+            Via("POL", "11:22", "11:23"),
+            Via("MES", "11:28", "11:29"),
+            Via("HAL", "11:34", "11:35"),
+            Via("HLS", "11:38", "11:39"),
+            Via("FEN", "11:48", "11:49"),
+            End("STA", "11:56"),
+        ]),
+        Line(name="113", stops=[
+            Start("UNI", "12:00"),
+            Via("BER", "12:03", "12:04"),
+            Via("BAH", "12:10", "12:11"),
+            Via("BHF", "12:13", "12:14"),
+            Via("MAR", "12:17", "12:18"),
+            Via("POL", "12:22", "12:23"),
+            Via("MES", "12:28", "12:29"),
+            Via("HAL", "12:34", "12:35"),
+            Via("HLS", "12:38", "12:39"),
+            Via("FEN", "12:48", "12:49"),
+            End("STA", "12:56"),
+        ]),
+        Line(name="114", stops=[
+            Start("UNI", "13:00"),
+            Via("BER", "13:03", "13:04"),
+            Via("BAH", "13:10", "13:11"),
+            Via("BHF", "13:13", "13:14"),
+            Via("MAR", "13:17", "13:18"),
+            Via("POL", "13:22", "13:23"),
+            Via("MES", "13:28", "13:29"),
+            Via("HAL", "13:34", "13:35"),
+            Via("HLS", "13:38", "13:39"),
+            Via("FEN", "13:48", "13:49"),
+            End("STA", "13:56"),
+        ]),
+        Line(name="115", stops=[
+            Start("UNI", "14:00"),
+            Via("BER", "14:03", "14:04"),
+            Via("BAH", "14:10", "14:11"),
+            Via("BHF", "14:13", "14:14"),
+            Via("MAR", "14:17", "14:18"),
+            Via("POL", "14:22", "14:23"),
+            Via("MES", "14:28", "14:29"),
+            Via("HAL", "14:34", "14:35"),
+            Via("HLS", "14:38", "14:39"),
+            Via("FEN", "14:48", "14:49"),
+            End("STA", "14:56"),
+        ]),
+        Line(name="116", stops=[
+            Start("UNI", "15:00"),
+            Via("BER", "15:03", "15:04"),
+            Via("BAH", "15:10", "15:11"),
+            Via("BHF", "15:13", "15:14"),
+            Via("MAR", "15:17", "15:18"),
+            Via("POL", "15:22", "15:23"),
+            Via("MES", "15:28", "15:29"),
+            Via("HAL", "15:34", "15:35"),
+            Via("HLS", "15:38", "15:39"),
+            Via("FEN", "15:48", "15:49"),
+            End("STA", "15:56"),
+        ]),
+        Line(name="117", stops=[
+            Start("UNI", "16:00"),
+            Via("BER", "16:03", "16:04"),
+            Via("BAH", "16:10", "16:11"),
+            Via("BHF", "16:13", "16:14"),
+            Via("MAR", "16:17", "16:18"),
+            Via("POL", "16:22", "16:23"),
+            Via("MES", "16:28", "16:29"),
+            Via("HAL", "16:34", "16:35"),
+            Via("HLS", "16:38", "16:39"),
+            Via("FEN", "16:48", "16:49"),
+            End("STA", "16:56"),
+        ]),
+        Line(name="118", stops=[
+            Start("UNI", "17:00"),
+            Via("BER", "17:03", "17:04"),
+            Via("BAH", "17:10", "17:11"),
+            Via("BHF", "17:13", "17:14"),
+            Via("MAR", "17:17", "17:18"),
+            Via("POL", "17:22", "17:23"),
+            Via("MES", "17:28", "17:29"),
+            Via("HAL", "17:34", "17:35"),
+            Via("HLS", "17:38", "17:39"),
+            Via("FEN", "17:48", "17:49"),
+            End("STA", "17:56"),
+        ]),
+        Line(name="119", stops=[
+            Start("UNI", "18:00"),
+            Via("BER", "18:03", "18:04"),
+            Via("BAH", "18:10", "18:11"),
+            Via("BHF", "18:13", "18:14"),
+            Via("MAR", "18:17", "18:18"),
+            Via("POL", "18:22", "18:23"),
+            Via("MES", "18:28", "18:29"),
+            Via("HAL", "18:34", "18:35"),
+            Via("HLS", "18:38", "18:39"),
+            Via("FEN", "18:48", "18:49"),
+            End("STA", "18:56"),
+        ]),
+        Line(name="120", stops=[
+            Start("UNI", "19:00"),
+            Via("BER", "19:03", "19:04"),
+            Via("BAH", "19:10", "19:11"),
+            Via("BHF", "19:13", "19:14"),
+            Via("MAR", "19:17", "19:18"),
+            Via("POL", "19:22", "19:23"),
+            Via("MES", "19:28", "19:29"),
+            Via("HAL", "19:34", "19:35"),
+            Via("HLS", "19:38", "19:39"),
+            Via("FEN", "19:48", "19:49"),
+            End("STA", "19:56"),
+        ]),
+        Line(name="121", stops=[
+            Start("UNI", "20:00"),
+            Via("BER", "20:03", "20:04"),
+            Via("BAH", "20:10", "20:11"),
+            Via("BHF", "20:13", "20:14"),
+            Via("MAR", "20:17", "20:18"),
+            Via("POL", "20:22", "20:23"),
+            Via("MES", "20:28", "20:29"),
+            Via("HAL", "20:34", "20:35"),
+            Via("HLS", "20:38", "20:39"),
+            Via("FEN", "20:48", "20:49"),
+            End("STA", "20:56"),
+        ]),
+        Line(name="122", stops=[
+            Start("UNI", "21:00"),
+            Via("BER", "21:03", "21:04"),
+            Via("BAH", "21:10", "21:11"),
+            Via("BHF", "21:13", "21:14"),
+            Via("MAR", "21:17", "21:18"),
+            Via("POL", "21:22", "21:23"),
+            Via("MES", "21:28", "21:29"),
+            Via("HAL", "21:34", "21:35"),
+            Via("HLS", "21:38", "21:39"),
+            Via("FEN", "21:48", "21:49"),
+            End("STA", "21:56"),
+        ]),
+        Line(name="123", stops=[
+            Start("UNI", "22:00"),
+            Via("BER", "22:03", "22:04"),
+            Via("BAH", "22:10", "22:11"),
+            Via("BHF", "22:13", "22:14"),
+            Via("MAR", "22:17", "22:18"),
+            Via("POL", "22:22", "22:23"),
+            Via("MES", "22:28", "22:29"),
+            Via("HAL", "22:34", "22:35"),
+            Via("HLS", "22:38", "22:39"),
+            Via("FEN", "22:48", "22:49"),
+            End("STA", "22:56"),
+        ]),
+        Line(name="124", stops=[
+            Start("UNI", "23:00"),
+            Via("BER", "23:03", "23:04"),
+            Via("BAH", "23:10", "23:11"),
+            Via("BHF", "23:13", "23:14"),
+            Via("MAR", "23:17", "23:18"),
+            Via("POL", "23:22", "23:23"),
+            Via("MES", "23:28", "23:29"),
+            Via("HAL", "23:34", "23:35"),
+            Via("HLS", "23:38", "23:39"),
+            Via("FEN", "23:48", "23:49"),
+            End("STA", "23:56"),
+        ])
     ]
 
 
@@ -155,7 +367,11 @@ def main():
     stations = get_stations()
     lines = get_lines()
     timetable = Timetable(stations, lines)
-    timetable.print_sorted_departures("SGH", "03:00")
+    from_station = timetable.get_station_for_name("Universität")
+    to_station = timetable.get_station_for_name("Messebahnhof")
+    departure_time = time.fromisoformat("06:00")
+    timetable.get_connection(from_station, to_station, departure_time)
+
 
 
 if __name__ == '__main__':
