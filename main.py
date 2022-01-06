@@ -48,19 +48,6 @@ def get_lines():
             Via("FEN", "00:48", "00:49"),
             End("STA", "00:56"),
         ]),
-        Line(name="21", stops=[
-            Start("UNI", "00:00"),
-            Via("BER", "00:03", "00:04"),
-            Via("BAH", "00:10", "00:11"),
-            Via("BHF", "00:13", "00:14"),
-            Via("MAR", "00:17", "00:18"),
-            Via("POL", "00:22", "00:23"),
-            Via("MES", "00:28", "00:29"),
-            Via("HAL", "00:34", "00:35"),
-            Via("HLS", "00:38", "00:39"),
-            Via("FEN", "00:48", "00:49"),
-            End("STA", "00:56"),
-        ]),
         Line(name="12", stops=[
             Start("UNI", "01:00"),
             Via("BER", "01:03", "01:04"),
@@ -131,13 +118,19 @@ def get_lines():
             Via("BER", "06:03", "06:04"),
             Via("BAH", "06:10", "06:11"),
             Via("BHF", "06:13", "06:14"),
-            Via("MAR", "06:17", "06:18"),
-            Via("POL", "06:22", "06:23"),
-            Via("MES", "06:28", "06:29"),
+            End("MAR", "06:17"),
+        ]),
+        Line(name="21", stops=[
+            Start("MAR", "06:23"),
+            Via("POL", "06:25", "06:26"),
             Via("HAL", "06:34", "06:35"),
             Via("HLS", "06:38", "06:39"),
             Via("FEN", "06:48", "06:49"),
             End("STA", "06:56"),
+        ]),
+        Line(name="25", stops=[
+            Start("POL", "06:27"),
+            End("MES", "06:30"),
         ]),
         Line(name="18", stops=[
             Start("UNI", "07:00"),
@@ -369,8 +362,10 @@ def main():
     timetable = Timetable(stations, lines)
     from_station = timetable.get_station_for_name("Universität")
     to_station = timetable.get_station_for_name("Messebahnhof")
-    departure_time = time.fromisoformat("06:00")
-    timetable.get_connection(from_station, to_station, departure_time)
+    departure_time = time.fromisoformat("05:58")
+    result = timetable.get_connection(from_station, to_station, departure_time)
+    for result_from_station, result_to_station, result_line in result:
+        print(result_from_station.station.name, result_from_station.departure_time, result_to_station.station.name, result_to_station.arrival_time, result_line.name)
 
 
 
